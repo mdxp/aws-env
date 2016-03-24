@@ -1,0 +1,32 @@
+#!/bin/bash
+
+function _aws_env() {
+  profile="${AWS_PROFILE}"
+  [[ $# -ge 1 ]] && profile="${1}"
+  [[ -z "${profile}" ]] && echo "AWS cli unconfigured - didn't get a profile name as argument or as env \$AWS_PROFILE" && return
+
+  export AWS_PROFILE=$profile
+  export AWS_ACCESS_KEY_ID=`aws configure get aws_access_key_id --profile $profile`
+  export AWS_SECRET_ACCESS_KEY=`aws configure get aws_secret_access_key --profile $profile`
+}
+
+function _aws_unset() {
+  unset AWS_PROFILE
+  unset AWS_ACCESS_KEY_ID
+  unset AWS_SECRET_ACCESS_KEY
+}
+
+function _aws_list_profiles() {
+  credentialFile="${AWS_CREDENTIAL_FILE:-'~/.aws/credentials'}"
+
+  while read line; do
+      if [[ $line == "["* ]]; then echo "$line"; fi;
+  done < $credentialFile;
+};
+
+alias aws-switch="_aws_env"
+alias aws-unset="_aws_unset"
+alias aws-list="_aws_list_profiles"
+alias aws-who="aws configure list"
+
+aws-switch
